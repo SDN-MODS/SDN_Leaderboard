@@ -1,0 +1,402 @@
+FrameWidgetClass SDN_LeaderboardRoot
+{
+    visible 1
+    ignorepointer 0
+    position 0 0
+    size 1 1
+    halign center_ref
+    valign center_ref
+    hexactpos 0
+    vexactpos 0
+    hexactsize 0
+    vexactsize 0
+    {
+        PanelWidgetClass SDN_Background
+        {
+            visible 1
+            ignorepointer 0
+            color 0 0 0 0.9
+            position 0 0
+            size 0.7 0.7
+            halign center_ref
+            valign center_ref
+            hexactpos 0
+            vexactpos 0
+            hexactsize 0
+            vexactsize 0
+            style DayZDefaultPanel
+            {
+                TextWidgetClass SDN_Title
+                {
+                    ignorepointer 1
+                    position 0 0.02
+                    size 1 0.05
+                    halign center_ref
+                    valign top_ref
+                    text "LEADERBOARD"
+                    font "gui/fonts/etelkatextpro28"
+                    "text halign" center
+                    "text valign" center
+                }
+                ButtonWidgetClass SDN_BtnClose
+                {
+                    color 0.863 0.078 0.235 1
+                    position 0.01 0.01
+                    size 0.04 0.04
+                    halign right_ref
+                    valign top_ref
+                    style DayZDefaultButton
+                    text "X"
+                    font "gui/fonts/etelkatextpro22"
+                }
+                PanelWidgetClass SDN_ColumnTitles
+                {
+                    ignorepointer 1
+                    position 0 0.08
+                    size 0.96 0.04
+                    halign center_ref
+                    valign top_ref
+                    hexactpos 0
+                    vexactpos 0
+                    hexactsize 0
+                    vexactsize 0
+                    {
+                        TextWidgetClass SDN_ColRank
+                        {
+                            ignorepointer 1
+                            position 0 0
+                            size 0.1 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            text "RANK"
+                            font "gui/fonts/etelkatextpro22"
+                            "text color" 1 0.843 0 1
+                            "text halign" center
+                            "text valign" center
+                        }
+                        PanelWidgetClass SDN_Div1
+                        {
+                            ignorepointer 1
+                            color 0.3 0.3 0.3 0.8
+                            position 0.1 0
+                            size 2 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 1
+                            vexactsize 0
+                            style DayZDefaultPanel
+                        }
+                        TextWidgetClass SDN_ColPlayer
+                        {
+                            ignorepointer 1
+                            position 0.1 0
+                            size 0.3 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            text "SURVIVOR"
+                            font "gui/fonts/etelkatextpro22"
+                            "text color" 1 1 1 1
+                            "text halign" center
+                            "text valign" center
+                        }
+                        PanelWidgetClass SDN_Div2
+                        {
+                            ignorepointer 1
+                            color 0.3 0.3 0.3 0.8
+                            position 0.4 0
+                            size 2 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 1
+                            vexactsize 0
+                            style DayZDefaultPanel
+                        }
+                        TextWidgetClass SDN_ColKills
+                        {
+                            ignorepointer 1
+                            position 0.4 0
+                            size 0.1 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            text "KILLS"
+                            font "gui/fonts/etelkatextpro22"
+                            "text color" 0.196 0.804 0.196 1
+                            "text halign" center
+                            "text valign" center
+                        }
+                        PanelWidgetClass SDN_Div3
+                        {
+                            ignorepointer 1
+                            color 0.3 0.3 0.3 0.8
+                            position 0.5 0
+                            size 2 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 1
+                            vexactsize 0
+                            style DayZDefaultPanel
+                        }
+                        TextWidgetClass SDN_ColDeaths
+                        {
+                            ignorepointer 1
+                            position 0.5 0
+                            size 0.1 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            text "DEATHS"
+                            font "gui/fonts/etelkatextpro22"
+                            "text color" 0.863 0.078 0.235 1
+                            "text halign" center
+                            "text valign" center
+                        }
+                        PanelWidgetClass SDN_Div4
+                        {
+                            ignorepointer 1
+                            color 0.3 0.3 0.3 0.8
+                            position 0.6 0
+                            size 2 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 1
+                            vexactsize 0
+                            style DayZDefaultPanel
+                        }
+                        TextWidgetClass SDN_ColKD
+                        {
+                            ignorepointer 1
+                            position 0.6 0
+                            size 0.15 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            text "KDR"
+                            font "gui/fonts/etelkatextpro22"
+                            "text color" 0.8 0.8 0.8 1
+                            "text halign" center
+                            "text valign" center
+                        }
+                        PanelWidgetClass SDN_Div5
+                        {
+                            ignorepointer 1
+                            color 0.3 0.3 0.3 0.8
+                            position 0.75 0
+                            size 2 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 1
+                            vexactsize 0
+                            style DayZDefaultPanel
+                        }
+                        TextWidgetClass SDN_ColLongestShot
+                        {
+                            ignorepointer 1
+                            position 0.75 0
+                            size 0.25 1
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            text "LONGEST KILL"
+                            font "gui/fonts/etelkatextpro22"
+                            "text color" 0.415 0.85 0.956 1
+                            "text halign" center
+                            "text valign" center
+                        }
+                    }
+                }
+                PanelWidgetClass SDN_HeaderDivider
+                {
+                    ignorepointer 1
+                    color 0.863 0.078 0.235 1
+                    position 0 0.13
+                    size 0.96 0.005
+                    halign center_ref
+                    valign top_ref
+                    hexactpos 0
+                    vexactpos 0
+                    hexactsize 0
+                    vexactsize 0
+                    style DayZDefaultPanel
+                }
+                ScrollWidgetClass SDN_ScrollArea
+                {
+                    ignorepointer 0
+                    position 0 0.14
+                    size 0.98 0.70
+                    halign center_ref
+                    valign top_ref
+                    hexactpos 0
+                    vexactpos 0
+                    hexactsize 0
+                    vexactsize 0
+                    "Scrollbar V" 1
+                    {
+                        WrapSpacerWidgetClass SDN_RowContainer
+                        {
+                            ignorepointer 1
+                            position 0 0
+                            size 1 1
+                            halign center_ref
+                            valign top_ref
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            Padding 0
+                            Margin 0
+                            "Size To Content V" 1
+                        }
+                    }
+                }
+                PanelWidgetClass SDN_MyStatsFooter
+                {
+                    visible 0
+                    ignorepointer 1
+                    color 0.05 0.05 0.05 1
+                    position 0 0.02
+                    size 0.96 0.08
+                    halign center_ref
+                    valign bottom_ref
+                    hexactpos 0
+                    vexactpos 0
+                    hexactsize 0
+                    vexactsize 0
+                    style DayZDefaultPanel
+                    {
+                        PanelWidgetClass SDN_MyFooterGrid
+                        {
+                            ignorepointer 1
+                            position 0 0
+                            size 1 1
+                            halign center_ref
+                            valign center_ref
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            {
+                                TextWidgetClass SDN_MyRankValue
+                                {
+                                    ignorepointer 1
+                                    position 0 0
+                                    size 0.1 1
+                                    hexactpos 0
+                                    vexactpos 0
+                                    hexactsize 0
+                                    vexactsize 0
+                                    color 1 0.843 0 1
+                                    text "#0"
+                                    font "gui/fonts/etelkatextpro22"
+                                    "text halign" center
+                                    "text valign" center
+                                }
+                                PanelWidgetClass SDN_FooterDiv1 { ignorepointer 1; color 0.3 0.3 0.3 0.8; position 0.1 0; size 2 1; hexactpos 0; vexactpos 0; hexactsize 1; vexactsize 0; style DayZDefaultPanel; }
+                                TextWidgetClass SDN_MyPlayerName
+                                {
+                                    ignorepointer 1
+                                    position 0.1 0
+                                    size 0.3 1
+                                    hexactpos 0
+                                    vexactpos 0
+                                    hexactsize 0
+                                    vexactsize 0
+                                    text "You"
+                                    font "gui/fonts/etelkatextpro22"
+                                    "text halign" center
+                                    "text valign" center
+                                }
+                                PanelWidgetClass SDN_FooterDiv2 { ignorepointer 1; color 0.3 0.3 0.3 0.8; position 0.4 0; size 2 1; hexactpos 0; vexactpos 0; hexactsize 1; vexactsize 0; style DayZDefaultPanel; }
+                                TextWidgetClass SDN_MyKillsValue
+                                {
+                                    ignorepointer 1
+                                    position 0.4 0
+                                    size 0.1 1
+                                    hexactpos 0
+                                    vexactpos 0
+                                    hexactsize 0
+                                    vexactsize 0
+                                    color 0.196 0.804 0.196 1
+                                    text "0"
+                                    font "gui/fonts/etelkatextpro22"
+                                    "text halign" center
+                                    "text valign" center
+                                }
+                                PanelWidgetClass SDN_FooterDiv3 { ignorepointer 1; color 0.3 0.3 0.3 0.8; position 0.5 0; size 2 1; hexactpos 0; vexactpos 0; hexactsize 1; vexactsize 0; style DayZDefaultPanel; }
+                                TextWidgetClass SDN_MyDeathsValue
+                                {
+                                    ignorepointer 1
+                                    position 0.5 0
+                                    size 0.1 1
+                                    hexactpos 0
+                                    vexactpos 0
+                                    hexactsize 0
+                                    vexactsize 0
+                                    color 0.863 0.078 0.235 1
+                                    text "0"
+                                    font "gui/fonts/etelkatextpro22"
+                                    "text halign" center
+                                    "text valign" center
+                                }
+                                PanelWidgetClass SDN_FooterDiv4 { ignorepointer 1; color 0.3 0.3 0.3 0.8; position 0.6 0; size 2 1; hexactpos 0; vexactpos 0; hexactsize 1; vexactsize 0; style DayZDefaultPanel; }
+                                TextWidgetClass SDN_MyKDValue
+                                {
+                                    ignorepointer 1
+                                    position 0.6 0
+                                    size 0.15 1
+                                    hexactpos 0
+                                    vexactpos 0
+                                    hexactsize 0
+                                    vexactsize 0
+                                    color 0.8 0.8 0.8 1
+                                    text "0.00"
+                                    font "gui/fonts/etelkatextpro22"
+                                    "text halign" center
+                                    "text valign" center
+                                }
+                                PanelWidgetClass SDN_FooterDiv5 { ignorepointer 1; color 0.3 0.3 0.3 0.8; position 0.75 0; size 2 1; hexactpos 0; vexactpos 0; hexactsize 1; vexactsize 0; style DayZDefaultPanel; }
+                                TextWidgetClass SDN_MyLongestShotValue
+                                {
+                                    ignorepointer 1
+                                    position 0.75 0
+                                    size 0.25 1
+                                    hexactpos 0
+                                    vexactpos 0
+                                    hexactsize 0
+                                    vexactsize 0
+                                    color 0.415 0.85 0.956 1
+                                    text "0m"
+                                    font "gui/fonts/etelkatextpro22"
+                                    "text halign" center
+                                    "text valign" center
+                                }
+                            }
+                        }
+                        PanelWidgetClass SDN_FooterBorder
+                        {
+                            ignorepointer 1
+                            color 1 0.843 0 1
+                            position 0 0
+                            size 1 0.02
+                            halign center_ref
+                            valign top_ref
+                            hexactpos 0
+                            vexactpos 0
+                            hexactsize 0
+                            vexactsize 0
+                            style DayZDefaultPanel
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
