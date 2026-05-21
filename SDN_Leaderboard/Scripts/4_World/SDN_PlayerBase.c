@@ -17,10 +17,10 @@ modded class PlayerBase
         }
     }
 
-    // CORREÇÃO: Assinatura da função atualizada e lógica de atribuição aprimorada
-    override void EEKilled(TotalDamageResult damageResult, Object killer, EntityAI source, bool isHeadshot)
+    // CORREÇÃO PARA DAYZ 1.26: EEKilled foi renomeado para EOnKilled na engine
+    override void EOnKilled(Object killer)
     {
-        super.EEKilled(damageResult, killer, source, isHeadshot);
+        super.EOnKilled(killer);
 
         if (GetGame().IsServer())
         {
@@ -29,10 +29,14 @@ modded class PlayerBase
             // 1. Tenta identificar o assassino direto
             Class.CastTo(pb_Killer, killer);
 
-            // 2. Se falhar (ex: explosivos/armadilhas), busca o dono do objeto (source)
-            if (!pb_Killer && source)
+            // 2. Se falhar (ex: explosivos/armadilhas), busca o dono do objeto
+            if (!pb_Killer && killer)
             {
-                pb_Killer = PlayerBase.Cast(source.GetHierarchyRootPlayer());
+                EntityAI killer_ent = EntityAI.Cast(killer);
+                if (killer_ent)
+                {
+                    pb_Killer = PlayerBase.Cast(killer_ent.GetHierarchyRootPlayer());
+                }
             }
 
             if (pb_Killer && pb_Killer != this && pb_Killer.GetIdentity() && this.GetIdentity())
@@ -40,9 +44,10 @@ modded class PlayerBase
                 float killDistance = vector.Distance(pb_Killer.GetPosition(), this.GetPosition());
 
                 string weaponName = "Unknown";
-                if (source)
+                EntityAI sourceEntity = EntityAI.Cast(killer);
+                if (sourceEntity)
                 {
-                    weaponName = source.GetType();
+                    weaponName = sourceEntity.GetType();
                 }
 
                 SDN_LeaderboardManager.GetInstance().ProcessKillEvent(pb_Killer, this, weaponName, killDistance);

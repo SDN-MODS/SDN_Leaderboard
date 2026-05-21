@@ -25,7 +25,6 @@ class SDN_LeaderboardManager
     ref array<ref SDN_PlayerStat> m_PlayerStats;
     ref map<string, int> m_KillCooldownTracker;
 
-    // Rádio emissor para o Cliente
     ref ScriptInvoker m_OnDataReceived;
 
     void SDN_LeaderboardManager()
@@ -47,7 +46,6 @@ class SDN_LeaderboardManager
         LoadData();
     }
 
-    // Handler para o RPC do CF no Servidor (Pedido de Dados)
     void RequestData(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
     {
         if (type == CallType.Server && sender)
@@ -56,7 +54,6 @@ class SDN_LeaderboardManager
         }
     }
 
-    // Handler para processar dados no Cliente
     void SDN_ProcessPayload(SDN_LeaderboardPayload payload)
     {
         if (m_OnDataReceived && payload)
@@ -68,6 +65,9 @@ class SDN_LeaderboardManager
     void SendLeaderboardDataToPlayer(PlayerIdentity identity)
     {
         if (!identity) return;
+
+        PlayerBase targetPlayer = PlayerBase.Cast(identity.GetPlayer());
+        if (!targetPlayer) return; // Evita Access Violation se o player desconectar rápido
 
         array<ref SDN_PlayerStat> sortedStats = new array<ref SDN_PlayerStat>;
         for (int i = 0; i < m_PlayerStats.Count(); i++)
@@ -89,62 +89,53 @@ class SDN_LeaderboardManager
             }
         }
 
-        ref SDN_LeaderboardPayload payload = new SDN_LeaderboardPayload();
+        ScriptRPC rpc = new ScriptRPC();
 
         int max = m_Config.MaxPlayersToShow;
         if (n < max) max = n;
 
+        rpc.Write(max);
         for (int k = 0; k < max; k++)
         {
             SDN_PlayerStat stat = sortedStats.Get(k);
             if (stat)
             {
-                payload.TopPlayers.Insert(stat);
+                rpc.Write(stat.PlayerName);
+                rpc.Write(stat.Kills);
+                rpc.Write(stat.Deaths);
+                rpc.Write(stat.KDRatio);
+                rpc.Write(stat.LongestKill);
             }
         }
 
+        SDN_PlayerStat myStat = null;
+        int myRank = -1;
         for (int r = 0; r < n; r++)
         {
             if (sortedStats.Get(r) && sortedStats.Get(r).PlayerUID == identity.GetPlainId())
             {
-                payload.MyStat = sortedStats.Get(r);
-                payload.MyRank = r + 1;
+                myStat = sortedStats.Get(r);
+                myRank = r + 1;
                 break;
             }
         }
 
-        // Serialização manual para garantir integridade total via RPC
-        ScriptRPC rpc = new ScriptRPC();
-
-        // Escreve TopPlayers
-        rpc.Write(payload.TopPlayers.Count());
-        for (int i = 0; i < payload.TopPlayers.Count(); i++)
-        {
-            SDN_PlayerStat pStat = payload.TopPlayers.Get(i);
-            rpc.Write(pStat.PlayerName);
-            rpc.Write(pStat.Kills);
-            rpc.Write(pStat.Deaths);
-            rpc.Write(pStat.KDRatio);
-            rpc.Write(pStat.LongestKill);
-        }
-
-        // Escreve MyStat
-        bool hasMyStat = (payload.MyStat != null);
+        bool hasMyStat = (myStat != null);
         rpc.Write(hasMyStat);
-        if (hasMyStat)
+        if (hasMyStat && myStat)
         {
-            rpc.Write(payload.MyRank);
-            rpc.Write(payload.MyStat.PlayerName);
-            rpc.Write(payload.MyStat.Kills);
-            rpc.Write(payload.MyStat.Deaths);
-            rpc.Write(payload.MyStat.KDRatio);
-            rpc.Write(payload.MyStat.LongestKill);
+            rpc.Write(myRank);
+            rpc.Write(myStat.PlayerName);
+            rpc.Write(myStat.Kills);
+            rpc.Write(myStat.Deaths);
+            rpc.Write(myStat.KDRatio);
+            rpc.Write(myStat.LongestKill);
         }
 
-        rpc.Send(null, 858502, true, identity);
+        // CORREÇÃO CRÍTICA: O alvo deve ser o targetPlayer para que o OnRPC() seja chamado no cliente
+        rpc.Send(targetPlayer, 858502, true, identity);
     }
 
-    // Recebe e reconstrói o objeto no Cliente
     void SDN_OnRPCData(ParamsReadContext ctx)
     {
         ref SDN_LeaderboardPayload payload = new SDN_LeaderboardPayload();
@@ -191,7 +182,6 @@ class SDN_LeaderboardManager
 
         if (daysPassed >= m_Config.AutoWipeDays)
         {
-            Print("[SDN_Leaderboard] Temporada Finalizada! Executando Wipe Automático...");
             m_PlayerStats.Clear();
             SaveData();
 
@@ -240,6 +230,8 @@ class SDN_LeaderboardManager
 
     void ProcessKillEvent(PlayerBase killer, PlayerBase victim, string weaponClass, float distance)
     {
+        if (!killer || !victim || !killer.GetIdentity() || !victim.GetIdentity()) return;
+
         SDN_PlayerStat vStat = GetOrCreatePlayerStat(victim.GetIdentity().GetPlainId(), victim.GetIdentity().GetName());
         vStat.Deaths++;
         vStat.KDRatio = CalculateKD(vStat.Kills, vStat.Deaths);
