@@ -12,7 +12,7 @@ class SDN_LeaderboardMenu extends UIScriptedMenu
     {
         layoutRoot = GetGame().GetWorkspace().CreateWidgets("SDN_Leaderboard/GUI/Layouts/SDN_Leaderboard.layout");
         Widget bg = layoutRoot.FindAnyWidget("SDN_Background");
-        if (bg) bg.SetColor(ARGB(240, 15, 15, 15)); 
+        if (bg) bg.SetColor(ARGB(240, 15, 15, 15));
         m_SDN_RowContainer = layoutRoot.FindAnyWidget("SDN_RowContainer");
         m_BtnClose = ButtonWidget.Cast(layoutRoot.FindAnyWidget("SDN_BtnClose"));
         m_MyStatsFooter = layoutRoot.FindAnyWidget("SDN_MyStatsFooter");
@@ -66,37 +66,38 @@ class SDN_LeaderboardMenu extends UIScriptedMenu
     {
         SDN_ClearList();
         if (m_MyStatsFooter) m_MyStatsFooter.Show(false);
-        GetRPCManager().SendRPC("SDN_Leaderboard", "RequestData", null, true, null);
+        if (GetRPCManager())
+        {
+            GetRPCManager().SendRPC("SDN_Leaderboard", "RequestData", null, true, null);
+        }
     }
 
-    void SDN_ReceiveData(ParamsReadContext ctx)
+    void SDN_ReceiveData(SDN_LeaderboardPayload payload)
     {
         SDN_ClearList();
-        int count = 0;
-        if (!ctx.Read(count)) return;
-        for (int i = 0; i < count; i++)
+        if (!payload || !payload.TopPlayers) return;
+
+        for (int i = 0; i < payload.TopPlayers.Count(); i++)
         {
-            string name = ""; int kills = 0; int deaths = 0; float kd = 0.0; int longest = 0;
-            ctx.Read(name); ctx.Read(kills); ctx.Read(deaths); ctx.Read(kd); ctx.Read(longest);
-            SDN_CreatePlayerRow(i + 1, name, kills, deaths, kd, longest);
-        }
-        bool hasMyStat = false;
-        if (ctx.Read(hasMyStat) && hasMyStat)
-        {
-            int myRank = 0; string myName = ""; int myKills = 0; int myDeaths = 0; float myKD = 0.0; int myLongest = 0;
-            ctx.Read(myRank); ctx.Read(myName); ctx.Read(myKills); ctx.Read(myDeaths); ctx.Read(myKD); ctx.Read(myLongest);
-            if (m_MyStatsFooter)
+            SDN_PlayerStat stat = payload.TopPlayers.Get(i);
+            if (stat)
             {
-                m_MyStatsFooter.Show(true);
-                TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyRankValue")).SetText("#" + myRank.ToString());
-                TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyPlayerName")).SetText(myName);
-                TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyKillsValue")).SetText(myKills.ToString());
-                TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyDeathsValue")).SetText(myDeaths.ToString());
-                string kdStr = myKD.ToString();
-                if (kdStr.Length() > 4) kdStr = kdStr.Substring(0, 4);
-                TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyKDValue")).SetText(kdStr);
-                TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyLongestShotValue")).SetText(myLongest.ToString() + "m");
+                SDN_CreatePlayerRow(i + 1, stat.PlayerName, stat.Kills, stat.Deaths, stat.KDRatio, stat.LongestKill);
             }
+        }
+
+        if (payload.MyStat && m_MyStatsFooter)
+        {
+            m_MyStatsFooter.Show(true);
+            TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyRankValue")).SetText("#" + payload.MyRank.ToString());
+            TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyPlayerName")).SetText(payload.MyStat.PlayerName);
+            TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyKillsValue")).SetText(payload.MyStat.Kills.ToString());
+            TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyDeathsValue")).SetText(payload.MyStat.Deaths.ToString());
+
+            string kdStr = payload.MyStat.KDRatio.ToString();
+            if (kdStr.Length() > 4) kdStr = kdStr.Substring(0, 4);
+            TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyKDValue")).SetText(kdStr);
+            TextWidget.Cast(layoutRoot.FindAnyWidget("SDN_MyLongestShotValue")).SetText(payload.MyStat.LongestKill.ToString() + "m");
         }
     }
 
@@ -105,16 +106,29 @@ class SDN_LeaderboardMenu extends UIScriptedMenu
         if (!m_SDN_RowContainer) return;
         Widget rowInstance = GetGame().GetWorkspace().CreateWidgets("SDN_Leaderboard/GUI/Layouts/SDN_Leaderboard_Row.layout", m_SDN_RowContainer);
         if (!rowInstance) return;
-        if (rank % 2 == 0) rowInstance.SetColor(ARGB(220, 25, 25, 25)); else rowInstance.SetColor(ARGB(220, 45, 45, 45));
+
+        if (rank % 2 == 0) rowInstance.SetColor(ARGB(220, 25, 25, 25));
+        else rowInstance.SetColor(ARGB(220, 45, 45, 45));
+
         TextWidget txtRank = TextWidget.Cast(rowInstance.FindAnyWidget("SDN_RankValue"));
         TextWidget txtName = TextWidget.Cast(rowInstance.FindAnyWidget("SDN_PlayerName"));
         TextWidget txtKills = TextWidget.Cast(rowInstance.FindAnyWidget("SDN_KillsValue"));
         TextWidget txtDeaths = TextWidget.Cast(rowInstance.FindAnyWidget("SDN_DeathsValue"));
         TextWidget txtKD = TextWidget.Cast(rowInstance.FindAnyWidget("SDN_KDValue"));
         TextWidget txtLongest = TextWidget.Cast(rowInstance.FindAnyWidget("SDN_LongestShotValue"));
-        if (txtRank) txtRank.SetText("#" + rank.ToString()); if (txtName) txtName.SetText(name); if (txtKills) txtKills.SetText(kills.ToString()); if (txtDeaths) txtDeaths.SetText(deaths.ToString()); if (txtLongest) txtLongest.SetText(longestKill.ToString() + "m"); 
-        string kdStr = kd.ToString(); if (kdStr.Length() > 4) kdStr = kdStr.Substring(0, 4); if (txtKD) txtKD.SetText(kdStr); 
+
+        if (txtRank) txtRank.SetText("#" + rank.ToString());
+        if (txtName) txtName.SetText(name);
+        if (txtKills) txtKills.SetText(kills.ToString());
+        if (txtDeaths) txtDeaths.SetText(deaths.ToString());
+        if (txtLongest) txtLongest.SetText(longestKill.ToString() + "m");
+
+        string kdStr = kd.ToString();
+        if (kdStr.Length() > 4) kdStr = kdStr.Substring(0, 4);
+        if (txtKD) txtKD.SetText(kdStr);
+
         m_SDN_RowWidgets.Insert(rowInstance);
     }
+
     bool SDN_IsMenuOpen() { return m_IsMenuOpen; }
 }

@@ -16,8 +16,8 @@ class SDN_LeaderboardManager
         return m_Instance;
     }
 
-    static const string MOD_FOLDER = "$profile:SDN_MODS\\";
-    static const string CONFIG_DIR = MOD_FOLDER + "SDN_Leaderboard\\";
+    static const string MOD_FOLDER = "$profile:SDN_MODS/";
+    static const string CONFIG_DIR = MOD_FOLDER + "SDN_Leaderboard/";
     static const string CONFIG_PATH = CONFIG_DIR + "Config.json";
     static const string DATA_PATH = CONFIG_DIR + "PlayerData.json";
 
@@ -33,7 +33,7 @@ class SDN_LeaderboardManager
         m_Config = new SDN_LeaderboardConfig;
         m_PlayerStats = new array<ref SDN_PlayerStat>;
         m_KillCooldownTracker = new map<string, int>;
-        m_OnDataReceived = new ScriptInvoker(); // Inicializa o emissor
+        m_OnDataReceived = new ScriptInvoker();
         Init();
     }
 
@@ -43,22 +43,36 @@ class SDN_LeaderboardManager
         if (!FileExist(CONFIG_DIR)) MakeDirectory(CONFIG_DIR);
 
         LoadConfig();
-        CheckAutoWipe(); 
+        CheckAutoWipe();
         LoadData();
     }
 
-    // ================= ENVO DE DADOS EM TEMPO REAL =================
+    // Handler para o RPC do CF no Servidor (Pedido de Dados)
+    void RequestData(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+    {
+        if (type == CallType.Server && sender)
+        {
+            SendLeaderboardDataToPlayer(sender);
+        }
+    }
+
+    // Handler para processar dados no Cliente
+    void SDN_ProcessPayload(SDN_LeaderboardPayload payload)
+    {
+        if (m_OnDataReceived && payload)
+        {
+            m_OnDataReceived.Invoke(payload);
+        }
+    }
+
     void SendLeaderboardDataToPlayer(PlayerIdentity identity)
     {
         if (!identity) return;
-        
-        PlayerBase targetPlayer = PlayerBase.Cast(identity.GetPlayer());
-        if (!targetPlayer) return;
 
         array<ref SDN_PlayerStat> sortedStats = new array<ref SDN_PlayerStat>;
-        for (int i = 0; i < m_PlayerStats.Count(); i++) 
-        { 
-            if (m_PlayerStats.Get(i)) sortedStats.Insert(m_PlayerStats.Get(i)); 
+        for (int i = 0; i < m_PlayerStats.Count(); i++)
+        {
+            if (m_PlayerStats.Get(i)) sortedStats.Insert(m_PlayerStats.Get(i));
         }
 
         int n = sortedStats.Count();
@@ -75,55 +89,88 @@ class SDN_LeaderboardManager
             }
         }
 
-        ScriptRPC rpc = new ScriptRPC();
-        
+        ref SDN_LeaderboardPayload payload = new SDN_LeaderboardPayload();
+
         int max = m_Config.MaxPlayersToShow;
         if (n < max) max = n;
-        
-        rpc.Write(max); 
 
         for (int k = 0; k < max; k++)
         {
             SDN_PlayerStat stat = sortedStats.Get(k);
             if (stat)
             {
-                rpc.Write(stat.PlayerName);
-                rpc.Write(stat.Kills);
-                rpc.Write(stat.Deaths);
-                rpc.Write(stat.KDRatio);
-                rpc.Write(stat.LongestKill);
+                payload.TopPlayers.Insert(stat);
             }
         }
 
-        SDN_PlayerStat myStat = null;
-        int myRank = -1;
         for (int r = 0; r < n; r++)
         {
             if (sortedStats.Get(r) && sortedStats.Get(r).PlayerUID == identity.GetPlainId())
             {
-                myStat = sortedStats.Get(r);
-                myRank = r + 1; 
+                payload.MyStat = sortedStats.Get(r);
+                payload.MyRank = r + 1;
                 break;
             }
         }
 
-        bool hasMyStat = (myStat != null);
-        rpc.Write(hasMyStat);
+        // Serialização manual para garantir integridade total via RPC
+        ScriptRPC rpc = new ScriptRPC();
 
-        if (hasMyStat && myStat)
+        // Escreve TopPlayers
+        rpc.Write(payload.TopPlayers.Count());
+        for (int i = 0; i < payload.TopPlayers.Count(); i++)
         {
-            rpc.Write(myRank);
-            rpc.Write(myStat.PlayerName);
-            rpc.Write(myStat.Kills);
-            rpc.Write(myStat.Deaths);
-            rpc.Write(myStat.KDRatio);
-            rpc.Write(myStat.LongestKill);
+            SDN_PlayerStat pStat = payload.TopPlayers.Get(i);
+            rpc.Write(pStat.PlayerName);
+            rpc.Write(pStat.Kills);
+            rpc.Write(pStat.Deaths);
+            rpc.Write(pStat.KDRatio);
+            rpc.Write(pStat.LongestKill);
         }
 
-        rpc.Send(targetPlayer, 858502, true, identity);
+        // Escreve MyStat
+        bool hasMyStat = (payload.MyStat != null);
+        rpc.Write(hasMyStat);
+        if (hasMyStat)
+        {
+            rpc.Write(payload.MyRank);
+            rpc.Write(payload.MyStat.PlayerName);
+            rpc.Write(payload.MyStat.Kills);
+            rpc.Write(payload.MyStat.Deaths);
+            rpc.Write(payload.MyStat.KDRatio);
+            rpc.Write(payload.MyStat.LongestKill);
+        }
+
+        rpc.Send(null, 858502, true, identity);
     }
 
-    // ================= WIPES AUTOMÁTICOS =================
+    // Recebe e reconstrói o objeto no Cliente
+    void SDN_OnRPCData(ParamsReadContext ctx)
+    {
+        ref SDN_LeaderboardPayload payload = new SDN_LeaderboardPayload();
+
+        int count = 0;
+        if (!ctx.Read(count)) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            string name; int kills, deaths, longest; float kd;
+            ctx.Read(name); ctx.Read(kills); ctx.Read(deaths); ctx.Read(kd); ctx.Read(longest);
+            payload.TopPlayers.Insert(new SDN_PlayerStat("", name, kills, deaths, kd, longest));
+        }
+
+        bool hasMyStat = false;
+        if (ctx.Read(hasMyStat) && hasMyStat)
+        {
+            ctx.Read(payload.MyRank);
+            string mName; int mKills, mDeaths, mLongest; float mKd;
+            ctx.Read(mName); ctx.Read(mKills); ctx.Read(mDeaths); ctx.Read(mKd); ctx.Read(mLongest);
+            payload.MyStat = new SDN_PlayerStat("", mName, mKills, mDeaths, mKd, mLongest);
+        }
+
+        SDN_ProcessPayload(payload);
+    }
+
     void CheckAutoWipe()
     {
         if (m_Config.AutoWipeDays <= 0) return;
@@ -155,7 +202,6 @@ class SDN_LeaderboardManager
         }
     }
 
-    // ================= LÓGICA DE VALIDAÇÃO (ANTI-FARM) =================
     bool IsValidKill(PlayerBase killer, PlayerBase victim, string weaponClass, float distance)
     {
         if (!m_Config.EnableMod) return false;
@@ -166,7 +212,7 @@ class SDN_LeaderboardManager
 
         foreach (string blacklisted : m_Config.BlacklistedWeapons)
         {
-            if (weaponClass.Contains(blacklisted)) return false; 
+            if (weaponClass.Contains(blacklisted)) return false;
         }
 
         int currentTime = GetGame().GetTime();
@@ -189,7 +235,7 @@ class SDN_LeaderboardManager
             m_KillCooldownTracker.Set(trackKey, currentTime);
         }
 
-        return true; 
+        return true;
     }
 
     void ProcessKillEvent(PlayerBase killer, PlayerBase victim, string weaponClass, float distance)
@@ -207,7 +253,7 @@ class SDN_LeaderboardManager
         SDN_PlayerStat kStat = GetOrCreatePlayerStat(killer.GetIdentity().GetPlainId(), killer.GetIdentity().GetName());
         kStat.Kills++;
         kStat.KDRatio = CalculateKD(kStat.Kills, kStat.Deaths);
-        
+
         int distInt = Math.Round(distance);
         if (distInt > kStat.LongestKill)
         {

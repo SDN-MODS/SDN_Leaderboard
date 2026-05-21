@@ -7,39 +7,36 @@ modded class InGameMenu
         layoutRoot = super.Init();
         if (layoutRoot)
         {
-            Widget container = layoutRoot.FindAnyWidget("play_panel_root"); 
+            Widget container = layoutRoot.FindAnyWidget("play_panel_root");
             Widget exitBtn = layoutRoot.FindAnyWidget("exitbtn");
             Widget restartBtn = layoutRoot.FindAnyWidget("restartbtn");
-            
+
             if (container)
             {
-                Widget tempRoot = GetGame().GetWorkspace().CreateWidgets("gui/layouts/day_z_ingamemenu.layout", null);
-                if (tempRoot)
+                // CRIAÇÃO PROFISSIONAL: Criamos o botão do zero usando a API do DayZ
+                // Isso evita clonar layouts inteiros e melhora a compatibilidade
+                m_SDN_LeaderboardBtn = ButtonWidget.Cast(GetGame().GetWorkspace().CreateWidgets("gui/layouts/new_ui/menu_ok_button.layout", container));
+
+                if (m_SDN_LeaderboardBtn)
                 {
-                    ButtonWidget stolenBtn = ButtonWidget.Cast(tempRoot.FindAnyWidget("optionsbtn"));
-                    if (stolenBtn)
+                    m_SDN_LeaderboardBtn.SetName("SDN_leaderboard_btn");
+
+                    // Ajuste de texto
+                    TextWidget btnText = TextWidget.Cast(m_SDN_LeaderboardBtn.FindAnyWidget("Text"));
+                    if (!btnText) btnText = TextWidget.Cast(m_SDN_LeaderboardBtn.GetChildren()); // Fallback
+
+                    if (btnText)
                     {
-                        stolenBtn.Unlink();
-                        m_SDN_LeaderboardBtn = stolenBtn;
-                        m_SDN_LeaderboardBtn.SetName("SDN_leaderboard_btn");
-                        TextWidget btnText = TextWidget.Cast(m_SDN_LeaderboardBtn.GetChildren());
-                        if (btnText) btnText.SetText("LEADERBOARD");
-                        m_SDN_LeaderboardBtn.SetColor(ARGB(255, 220, 20, 20));
+                        btnText.SetText("LEADERBOARD");
                     }
-                    
-                    PanelWidget redLine = PanelWidget.Cast(GetGame().GetWorkspace().CreateWidget(PanelWidgetTypeID, container));
-                    redLine.SetColor(ARGB(255, 200, 20, 20));
-                    redLine.SetSize(1, 4);
-                    
-                    if (restartBtn) restartBtn.Unlink();
-                    if (exitBtn) exitBtn.Unlink();
-                    
-                    if (m_SDN_LeaderboardBtn) container.AddChild(m_SDN_LeaderboardBtn);
-                    container.AddChild(redLine);
-                    if (restartBtn) container.AddChild(restartBtn);
-                    if (exitBtn) container.AddChild(exitBtn);
-                    
-                    tempRoot.Unlink(); 
+
+                    // Estilização
+                    m_SDN_LeaderboardBtn.SetColor(ARGB(255, 220, 20, 20));
+                    m_SDN_LeaderboardBtn.SetSort(1); // Garante a ordem correta
+
+                    // Reorganização do container para manter o padrão visual
+                    if (restartBtn) restartBtn.SetSort(2);
+                    if (exitBtn) exitBtn.SetSort(3);
                 }
             }
         }
@@ -50,7 +47,7 @@ modded class InGameMenu
     {
         if (w == m_SDN_LeaderboardBtn)
         {
-            GetGame().GetUIManager().HideScriptedMenu(this); 
+            GetGame().GetUIManager().HideScriptedMenu(this);
             MissionGameplay mission = MissionGameplay.Cast(GetGame().GetMission());
             if (mission) mission.SDN_ShowLeaderboard();
             return true;
