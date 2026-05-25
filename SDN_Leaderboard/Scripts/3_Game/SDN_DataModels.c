@@ -7,37 +7,37 @@ class SDN_LeaderboardConfig
 {
     int EnableMod;
     int MaxPlayersToShow;
-    
-    int KillCooldownSeconds;          
-    int EnableAntiSameIP;             
-    int MinVictimPlaytimeSeconds;     
-    int AutoWipeDays;                 
-    
+
+    int KillCooldownSeconds;
+    int EnableAntiSameIP;
+    int MinVictimPlaytimeSeconds;
+    int AutoWipeDays;
+
     int LastWipeYear;
     int LastWipeMonth;
     int LastWipeDay;
-    
-    ref TStringArray BlacklistedWeapons; 
+
+    ref TStringArray BlacklistedWeapons;
 
     void SDN_LeaderboardConfig()
     {
         EnableMod = 1;
         MaxPlayersToShow = 10;
-        KillCooldownSeconds = 120;       
-        EnableAntiSameIP = 1;            
-        MinVictimPlaytimeSeconds = 300;  
-        AutoWipeDays = 30;               
+        KillCooldownSeconds = 120;
+        EnableAntiSameIP = 1;
+        MinVictimPlaytimeSeconds = 300;
+        AutoWipeDays = 30;
         LastWipeYear = 0;
         LastWipeMonth = 0;
         LastWipeDay = 0;
-        
+
         BlacklistedWeapons = new TStringArray;
-        BlacklistedWeapons.Insert("SurvivorBase");    
-        BlacklistedWeapons.Insert("OffroadHatchback"); 
+        BlacklistedWeapons.Insert("SurvivorBase");
+        BlacklistedWeapons.Insert("OffroadHatchback");
         BlacklistedWeapons.Insert("CivilianSedan");
         BlacklistedWeapons.Insert("Hatchback_02");
         BlacklistedWeapons.Insert("Truck_01_Covered");
-        BlacklistedWeapons.Insert("Infected");        
+        BlacklistedWeapons.Insert("Infected");
     }
 }
 
@@ -61,7 +61,7 @@ class SDN_PlayerStat
     }
 }
 
-// NOVA CLASSE CF: Usada para empacotar e enviar os dados pela rede
+// CLASSE DE PAYLOAD: Corrigida e pronta para serialização RPC
 class SDN_LeaderboardPayload
 {
     ref array<ref SDN_PlayerStat> TopPlayers;
@@ -70,7 +70,7 @@ class SDN_LeaderboardPayload
 
     void SDN_LeaderboardPayload()
     {
-        TopPlayers = new array<ref SDN_PlayerStat>();
+        TopPlayers = new array<ref SDN_PlayerStat>;
         MyRank = 0;
     }
 }

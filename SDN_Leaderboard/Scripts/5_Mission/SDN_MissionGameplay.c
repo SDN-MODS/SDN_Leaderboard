@@ -24,7 +24,7 @@ modded class MissionGameplay
         }
     }
 
-    // Recebe o Payload do CF e injeta no Menu
+    // Recebe o Payload do Manager e injeta no Menu
     void SDN_UpdateLeaderboardUI(SDN_LeaderboardPayload payload)
     {
         if (m_SDNLeaderboardMenu && m_SDNLeaderboardMenu.SDN_IsMenuOpen())
@@ -41,7 +41,7 @@ modded class MissionGameplay
             m_SDNLeaderboardMenu = new SDN_LeaderboardMenu();
             m_SDNLeaderboardMenu.Init();
         }
-        
+
         if (!m_SDNLeaderboardMenu.SDN_IsMenuOpen())
         {
             GetGame().GetUIManager().ShowScriptedMenu(m_SDNLeaderboardMenu, NULL);
